@@ -29,9 +29,13 @@ cp .env.example .env      # add at least one API key
 ## Run
 
 ```bash
-streamlit run main.py     # web UI
-python agent.py           # CLI
+streamlit run app.py                  # web UI
+python -m hermes.frontends.tui        # terminal UI
+python -m hermes.frontends.cli        # plain CLI, no approval gate
 ```
+
+Installing the package (`pip install -e .`) also gives you `hermes` and
+`hermes-tui` as commands.
 
 ---
 
@@ -138,12 +142,14 @@ unless `HERMES_ALLOW_OUTSIDE_WORKSPACE=1`.
 
 ### Adding a tool
 
-Write a decorated function in `tools/`. The JSON schema comes from the signature,
+Write a decorated function in `hermes/tools/builtin/`. The JSON schema comes from the signature,
 type hints, and docstring — there is no schema list to update and no dispatch
 branch to add.
 
 ```python
-from .base import tool, Risk, ToolError, safe_path
+from ..registry import Risk, tool
+from ..errors import ToolError
+from ..sandbox import safe_path
 
 @tool(toolset="files", risk=Risk.WRITE, path_arg="file_path", parallel_safe=False)
 def append_file(file_path: str, text: str) -> dict:
@@ -174,7 +180,7 @@ clean message. Anything else raised becomes a structured error rather than a cra
 
 ### Adding a provider
 
-If it's OpenAI-shaped, add a row to `PROFILES` in `providers.py`:
+If it's OpenAI-shaped, add a row to `PROFILES` in `hermes/providers/profiles.py`:
 
 ```python
 "cerebras": ProviderProfile(
@@ -193,23 +199,48 @@ transport is only needed for a genuinely different wire format.
 ## Layout
 
 ```
-main.py                    entrypoint for streamlit
-agent.py                   CLI frontend + the model-call loop with failover
-frontends/streamlit_app.py web frontend; widgets only, no agent logic
+app.py                          streamlit entrypoint (thin shim)
+pyproject.toml                  packaging + `hermes` / `hermes-tui` commands
 
-providers.py               model string -> credentials, base URL, API mode
-transports.py              one class per wire protocol
-conversation.py            Message/Turn, clean + api_content, iteration budget
-session.py                 threads, approval gate, persistence, model switching
-models.py                  catalog discovery, caching, cross-provider search
-tools/                     registry, schema derivation, toolsets
-paths.py                   every state path, resolved from .env
-workspace.py               project files, notes, recent projects
+hermes/
+├── config/
+│   ├── paths.py                every state path, resolved from .env
+│   └── settings.py             every other .env knob, in one place
+├── core/
+│   ├── messages.py             Message / ToolCall / Turn, clean + api_content
+│   ├── conversation.py         history and the invariants providers enforce
+│   ├── budget.py               per-turn iteration budget
+│   ├── loop.py                 model call with retry and failover
+│   └── session.py              threads, approval gate, persistence, switching
+├── providers/
+│   ├── profiles.py             the provider table and the API modes
+│   ├── runtime.py              model string -> credentials, base URL, API mode
+│   ├── errors.py               retry / failover / fatal classification
+│   └── catalog.py              discovery, caching, cross-provider search
+├── transports/
+│   ├── base.py                 POST, error raising, shared tool-result shape
+│   ├── chat_completions.py     OpenAI, Gemini, OpenRouter, Groq, DeepSeek, local
+│   └── anthropic_messages.py   Anthropic
+├── tools/
+│   ├── registry.py             the @tool decorator and the Tool record
+│   ├── schema.py               signature + docstring -> JSON schema
+│   ├── sandbox.py              workspace confinement
+│   ├── runner.py               concurrency planning, call-order results
+│   └── builtin/                files, shell, web
+├── workspace/                  project files, notes, recent projects
+└── frontends/
+    ├── cli.py                  plain CLI; tools run as the model asks
+    ├── tui/                    terminal UI with an approval gate
+    └── streamlit_ui/           web UI; widgets only, no agent logic
 ```
 
-Both frontends drive the same loop. `agent.py` runs tools the moment the model asks;
-`session.py` stops at the approval boundary and lets the caller decide. Swapping in a
-TUI means writing one file.
+Dependencies point one way: `frontends` → `core` → `transports` → `providers` →
+`config`. `tools` sits beside `core` and is used by both. Nothing below
+`frontends` imports a frontend, so a new UI is additive.
+
+All three frontends drive the same loop. `cli.py` runs tools the moment the model
+asks; `core/session.py` stops at the approval boundary and lets the caller decide,
+which is what the TUI and the web UI both need.
 
 ---
 
@@ -233,5 +264,5 @@ same bug as dropping it in memory, just deferred until someone reopens the tab.
 reconstructing `api_content` rather than storing what arrived, which is the exact
 fidelity guarantee everything else here depends on.
 
-**`shell.py`'s blocklist is not a security boundary.** It catches obvious accidents.
+**The shell blocklist is not a security boundary.** It catches obvious accidents.
 Real isolation needs a container; the approval gate is doing the actual work.

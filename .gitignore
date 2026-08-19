@@ -33,3 +33,5 @@ __pycache__/
 
 # State files
 state/
+.hermes/
+.hermes_ui/
