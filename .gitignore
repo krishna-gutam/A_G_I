@@ -30,6 +30,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+combined_app.py
+combine_py.py
 
 # State files
 state/

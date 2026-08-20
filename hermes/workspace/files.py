@@ -21,8 +21,8 @@ def list_project_files(root: str = ".") -> List[str]:
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".")]
         for f in filenames:
-            if f.startswith("."):
-                continue
+            # if f.startswith("."):
+            #     continue
             files.append(os.path.relpath(os.path.join(dirpath, f), root))
             if len(files) >= MAX_LISTED:
                 return sorted(files)
