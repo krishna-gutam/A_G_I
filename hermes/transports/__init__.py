@@ -9,14 +9,12 @@ Adding a protocol means a module here plus a row in TRANSPORTS.
 """
 
 from ..providers.errors import TransportError
-from ..providers.profiles import ANTHROPIC_MESSAGES, CHAT_COMPLETIONS
-from .anthropic_messages import AnthropicMessagesTransport
+from ..providers.profiles import CHAT_COMPLETIONS
 from .base import BaseTransport
 from .chat_completions import ChatCompletionsTransport
 
 TRANSPORTS = {
     CHAT_COMPLETIONS: ChatCompletionsTransport,
-    ANTHROPIC_MESSAGES: AnthropicMessagesTransport,
 }
 
 
@@ -26,5 +24,5 @@ def build_transport(runtime):
 
 __all__ = [
     "TRANSPORTS", "build_transport", "BaseTransport", "TransportError",
-    "ChatCompletionsTransport", "AnthropicMessagesTransport",
+    "ChatCompletionsTransport", 
 ]

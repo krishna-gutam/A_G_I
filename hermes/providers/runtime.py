@@ -10,12 +10,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from ..config import settings
-from .profiles import (
-    ANTHROPIC_MESSAGES,
-    CHAT_COMPLETIONS,
-    DEFAULT_PROVIDER,
-    PROFILES,
-)
+from .profiles import CHAT_COMPLETIONS, DEFAULT_PROVIDER, PROFILES
 
 
 @dataclass
@@ -52,8 +47,6 @@ def detect_api_mode(base_url: str, provider: Optional[str]) -> str:
     that custom gateways and proxies route correctly.
     """
     host = (base_url or "").lower()
-    if "api.anthropic.com" in host or host.rstrip("/").endswith("/anthropic"):
-        return ANTHROPIC_MESSAGES
     if provider and provider in PROFILES:
         return PROFILES[provider].api_mode
     return CHAT_COMPLETIONS

@@ -8,13 +8,7 @@ Providers: who we can talk to, how to reach them, and what a failure means.
 """
 
 from .errors import FAILOVER, FATAL, RETRY, TransportError, classify_error
-from .profiles import (
-    ANTHROPIC_MESSAGES,
-    CHAT_COMPLETIONS,
-    DEFAULT_PROVIDER,
-    PROFILES,
-    ProviderProfile,
-)
+from .profiles import CHAT_COMPLETIONS, DEFAULT_PROVIDER, PROFILES, ProviderProfile
 from .runtime import (
     RuntimeConfig,
     detect_api_mode,
@@ -24,7 +18,7 @@ from .runtime import (
 )
 
 __all__ = [
-    "ANTHROPIC_MESSAGES", "CHAT_COMPLETIONS", "DEFAULT_PROVIDER", "PROFILES",
+     "CHAT_COMPLETIONS", "DEFAULT_PROVIDER", "PROFILES",
     "ProviderProfile", "RuntimeConfig", "detect_api_mode", "resolve_chain",
     "resolve_runtime", "split_provider_prefix",
     "RETRY", "FAILOVER", "FATAL", "TransportError", "classify_error",

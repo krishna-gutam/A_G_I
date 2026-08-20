@@ -72,7 +72,6 @@ STATIC = [
     ("openai", "o4-mini", 200000),
     ("gemini", "gemini-3-flash", 1048576), ("gemini", "gemini-3-pro", 1048576),
     ("gemini", "gemini-2.5-flash", 1048576),
-    ("anthropic", "claude-sonnet-4-6", 200000), ("anthropic", "claude-haiku-4-5", 200000),
     ("deepseek", "deepseek-chat", 65536),
     # Groq hosts other people's open models; the live probe is authoritative,
     # these are only a floor for when it can't be reached.
@@ -153,26 +152,6 @@ def _probe_openai_compatible(provider: str) -> List[ModelInfo]:
         return []
 
 
-def _probe_anthropic() -> List[ModelInfo]:
-    key = _key_for("anthropic")
-    if not key:
-        return []
-    try:
-        r = requests.get(
-            "https://api.anthropic.com/v1/models",
-            headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
-            timeout=PROBE_TIMEOUT,
-        )
-        r.raise_for_status()
-        return [
-            ModelInfo(ref=f"anthropic:{m['id']}", provider="anthropic", model_id=m["id"],
-                      label=m.get("display_name", ""), context_length=200000, source="anthropic")
-            for m in r.json().get("data", [])
-        ]
-    except Exception:
-        return []
-
-
 def _probe_ollama() -> List[ModelInfo]:
     """Native tags endpoint -- some Ollama builds don't serve /v1/models."""
     base = settings.LOCAL_BASE_URL.replace("/v1", "")
@@ -190,7 +169,6 @@ def _probe_ollama() -> List[ModelInfo]:
 
 PROBES = [
     _probe_openrouter,
-    _probe_anthropic,
     _probe_ollama,
     lambda: _probe_openai_compatible("openai"),
     lambda: _probe_openai_compatible("gemini"),

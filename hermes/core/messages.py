@@ -8,7 +8,7 @@ representations.
   api_content  -- the provider's own message object, byte-faithful.
 
 Whatever opaque state the vendor requires back -- Gemini thought signatures,
-OpenAI reasoning items, Anthropic thinking-block signatures -- rides in
+OpenAI reasoning items -- rides in
 api_content and is replayed untouched. Nothing here inspects it, so nothing
 here can drop it. The clean copy stays readable regardless.
 """

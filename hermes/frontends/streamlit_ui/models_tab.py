@@ -19,7 +19,7 @@ def render_model_picker(session: AgentSession) -> None:
 
     query = st.text_input(
         "Search models",
-        placeholder="flash 3   ·   claude sonnet   ·   qwen coder",
+        placeholder="flash 3   ·   gpt-4o   ·   qwen coder",
         key="model_query",
     )
 
@@ -67,7 +67,7 @@ def render_model_picker(session: AgentSession) -> None:
     fallback_text = st.text_input(
         "Fallback chain",
         value=",".join(session.fallbacks),
-        placeholder="openrouter:google/gemini-3-flash,anthropic",
+        placeholder="openrouter:google/gemini-3-flash,openai",
         help="Comma-separated. Used in order when a provider is rate-limited or out of credit.",
         key="fallback_chain",
     )

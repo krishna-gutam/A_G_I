@@ -15,7 +15,6 @@ from ..config import settings
 # Transports are written per protocol, not per vendor. A dozen providers share
 # CHAT_COMPLETIONS; only genuinely different wire formats earn a new mode.
 CHAT_COMPLETIONS = "chat_completions"
-ANTHROPIC_MESSAGES = "anthropic_messages"
 
 
 @dataclass(frozen=True)
@@ -63,14 +62,6 @@ PROFILES = {
         base_url="https://api.deepseek.com/v1",
         key_env=("DEEPSEEK_API_KEY",),
         default_model="deepseek-chat",
-    ),
-    "anthropic": ProviderProfile(
-        name="anthropic",
-        base_url="https://api.anthropic.com/v1",
-        key_env=("ANTHROPIC_API_KEY",),
-        api_mode=ANTHROPIC_MESSAGES,
-        default_model="claude-sonnet-4-6",
-        headers={"anthropic-version": "2023-06-01"},
     ),
     # Anything OpenAI-shaped: Ollama, LM Studio, vLLM, llama.cpp.
     "local": ProviderProfile(
